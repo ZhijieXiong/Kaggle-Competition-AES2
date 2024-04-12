@@ -47,6 +47,8 @@ def process_kaggle_AES2(source_dir):
         os.mkdir(processed_data_dir)
 
     src_data = load_csv(os.path.join(source_dir, "train.csv"))
+    # 原始数据为1~6分，改为0~5分
+    src_data["score"] = src_data["score"] - 1
     src_data["essay_index"] = range(len(src_data))
     src_data.to_csv(os.path.join(processed_data_dir, "data.csv"), index=False)
 
@@ -59,7 +61,7 @@ PROCESS_FUNCTION_TABLE = {
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--raw_data_dir", type=str, default=r"F:\code\myProjects\kaggle-AES2-competition\data\raw\asap-sas")
+    parser.add_argument("--raw_data_dir", type=str, default=r"F:\code\myProjects\kaggle-AES2-competition\data\raw\learning-agency-lab-automated-essay-scoring-2")
     parser.add_argument("--seed", type=int, default=0)
 
     args = parser.parse_args()

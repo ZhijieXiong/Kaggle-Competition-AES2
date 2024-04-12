@@ -20,7 +20,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str,
                         default=r"F:\code\myProjects\kaggle-AES2-competition\data\processed\kaggle-AES2024")
-    parser.add_argument("--max_label_num", type=int, default=7)
+    parser.add_argument("--max_label_num", type=int, default=6)
     parser.add_argument("--bert_model_dir", type=str,
                         default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-uncased")
     parser.add_argument("--seed", type=int, default=0)
