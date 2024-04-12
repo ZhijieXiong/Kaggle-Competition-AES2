@@ -1,29 +1,20 @@
 import argparse
-import os.path
+import os
+import torch
 
 import pandas as pd
-import torch
 from torch.utils.data import DataLoader, RandomSampler
 from transformers import get_linear_schedule_with_warmup, BertTokenizer
 from torch.optim import AdamW
 from sklearn.model_selection import train_test_split
-import random
-import numpy as np
 
 from dataset.BERTDataset import BERTDataset
 from model.BERTClassifier import BERTClassifier
 from train_and_eval.bert import train
 
-from util import get_now_time
+from util import get_now_time, set_seed
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-
-def set_seed(seed_value):
-    random.seed(seed_value)
-    np.random.seed(seed_value)
-    torch.manual_seed(seed_value)
-    torch.cuda.manual_seed_all(seed_value)
 
 
 if __name__ == "__main__":
@@ -34,7 +25,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=8)
     parser.add_argument("--max_len", type=int, default=512)
 
-    parser.add_argument("--num_epoch", type=int, default=20)
+    parser.add_argument("--num_epoch", type=int, default=6)
     parser.add_argument("--learning_rate", type=float, default=5e-6)
     parser.add_argument("--epsilon", type=float, default=1e-6)
     parser.add_argument("--warmup_steps", type=int, default=0)
@@ -63,7 +54,7 @@ if __name__ == "__main__":
         tokenizer=bert_tokenizer,
         max_length=params["max_len"]
     )
-    train_dataloader = DataLoader(train_dataset, sampler=RandomSampler(train_dataset), batch_size=params["batch_size"], shuffle=True)
+    train_dataloader = DataLoader(train_dataset, sampler=RandomSampler(train_dataset), batch_size=params["batch_size"])
     valid_dataset = BERTDataset(
         txt_list=X_val.tolist(),
         labels=y_val.tolist(),

@@ -128,13 +128,15 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
 
         print("\n\n\n")
 
+    epoch_ids = list(range(1, epochs+1))
     metric_df = pd.DataFrame(
-        np.array([train_loss_list, train_acc_list, train_acc5_list, train_f1_list, val_loss_list, val_acc_list, val_acc5_list, val_f1_list, test_loss_list, test_acc_list, test_acc5_list, test_f1_list]).T,
-        columns=["train_loss", "train_acc", "train_acc5", "train_f1", "val_loss", "val_acc", "val_acc5", "val_f1",
+        np.array([epoch_ids, train_loss_list, train_acc_list, train_acc5_list, train_f1_list, val_loss_list, val_acc_list,
+                  val_acc5_list, val_f1_list, test_loss_list, test_acc_list, test_acc5_list, test_f1_list]).T,
+        columns=["epoch_id", "train_loss", "train_acc", "train_acc5", "train_f1", "val_loss", "val_acc", "val_acc5", "val_f1",
                  "test_loss", "test_acc", "test_acc5", "test_f1"])
-
+    metric_df["epoch_id"] = metric_df["epoch_id"].astype(int)
     result_path = os.path.join(output_dir, "metric_df.csv")
-    metric_df.to_csv(result_path, encoding="utf-8")
+    metric_df.to_csv(result_path, encoding="utf-8", index=False)
 
     return metric_df
 
