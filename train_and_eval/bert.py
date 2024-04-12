@@ -14,8 +14,6 @@ from .util import top_k_accuracy
 def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, scheduler,
           epochs, device, output_dir, evaluation=True):
     loss_fn = nn.CrossEntropyLoss()
-
-    print("Start training...\n")
     train_loss_list, train_acc_list, train_f1_list, train_acc5_list = [], [], [], []
     val_loss_list, val_acc_list, val_f1_list, val_acc5_list = [], [], [], []
     test_loss_list, test_acc_list, test_f1_list, test_acc5_list = [], [], [], []
@@ -24,6 +22,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
         # =======================================
         #               Training
         # =======================================
+        print(f"Start training (epoch {epoch_i+1}) ...")
         print(f"{'Epoch':^7} | {'Batch':^7} | {'Train Loss':^12} | {'Train Acc':^9} | {'Train Acc5':^9} | "
               f"{'Train F1':^12} | {'Val Loss':^10} | {'Val Acc':^9} | {'Val Acc5':^9} | {'Val F1':^12} | {'Elapsed':^9}")
         print("-"*150)
@@ -82,23 +81,22 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
         train_acc5_list.append(avg_train_acc5)
         train_f1_list.append(avg_train_f1)
 
-        model_save_path = os.path.join(output_dir, f"epoch-{epoch_i}.pt")
+        model_save_path = os.path.join(output_dir, f"epoch-{epoch_i+1}.pt")
         print("-"*150)
-        print("Saving model to %s" % model_save_path)
+        print(f"Saving model after epoch {epoch_i+1} (path: {model_save_path}) ...")
+        print("-" * 150)
         torch.save(model, model_save_path)
 
         # =======================================
         #               Evaluation
         # =======================================
+        print("Start evaluating on valid data ...")
         val_loss, val_accuracy, val_acc5, val_f1 = evaluate(model, val_dataloader, device)
         val_loss_list.append(val_loss)
         val_acc_list.append(val_accuracy)
         val_acc5_list.append(val_acc5)
         val_f1_list.append(val_f1)
-
-        # Print performance over the entire training data
         time_elapsed = time.time() - t0_epoch
-
         print(f"{'Epoch':^7} | {'Batch':^7} | {'Train Loss':^12} | {'Train Acc':^9} | {'Train Acc5':^9} | "
               f"{'Train F1':^12} | {'Val Loss':^10} | {'Val Acc':^9} | {'Val Acc5':^9} | {'Val F1':^12} | {'Elapsed':^9}")
         print("-"*150)
@@ -111,15 +109,12 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
         #               Test
         # =======================================
         if evaluation:
-            # After the completion of each training epoch, measure the model's performance
-            # on our validation set.
+            print("Start evaluating on test data ...")
             test_loss, test_accuracy, test_acc5, test_f1 = evaluate(model, test_dataloader, device)
             test_loss_list.append(test_loss)
             test_acc_list.append(test_accuracy)
             test_acc5_list.append(test_acc5)
             test_f1_list.append(test_f1)
-
-            # Print performance over the entire training data
             time_elapsed = time.time() - t0_epoch
 
             print(f"{'Epoch':^7} | {'Batch':^7} | {'Train Loss':^12} | {'Train Acc':^9} | {'Train Acc5':^9} | "
@@ -131,7 +126,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
                   f"{time_elapsed:^9.2f}")
             print("-"*150)
 
-        print("\n")
+        print("\n\n\n")
 
     metric_df = pd.DataFrame(
         np.array([train_loss_list, train_acc_list, train_acc5_list, train_f1_list, val_loss_list, val_acc_list, val_acc5_list, val_f1_list, test_loss_list, test_acc_list, test_acc5_list, test_f1_list]).T,
@@ -182,6 +177,6 @@ def evaluate(model, dataloader, device):
     val_acc = total_acc / len(dataloader)
     val_acc5 = total_acc5 / len(dataloader)
     val_f1 = total_f1 / len(dataloader)
-    print("QWK: ", cohen_kappa_score(full_b_labels, full_predict_score, weights="quadratic"))
+    print("QWK metric is: ", cohen_kappa_score(full_b_labels, full_predict_score, weights="quadratic"))
 
     return val_loss, val_acc, val_acc5, val_f1

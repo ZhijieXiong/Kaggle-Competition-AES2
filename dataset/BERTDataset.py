@@ -2,8 +2,11 @@ import torch
 from torch.utils.data import Dataset
 
 
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+
 class BERTDataset(Dataset):
-    def __init__(self, txt_list, labels, tokenizer, max_length=128):
+    def __init__(self, txt_list, labels, tokenizer, max_length):
         self.tokenizer = tokenizer
         self.labels = torch.tensor(labels)
         self.input_ids = None
@@ -22,19 +25,19 @@ class BERTDataset(Dataset):
 
         for sent in data:
             encoded_sent = tokenizer.encode_plus(
-                text=sent,  # text_preprocessing(sent),  # Preprocess sentence
-                add_special_tokens=True,  # Add `[CLS]` and `[SEP]`
-                max_length=max_len,  # Max length to truncate/pad
-                pad_to_max_length=True,  # Pad sentence to max length
-                # return_tensors='pt',           # Return PyTorch tensor
-                return_attention_mask=True  # Return attention mask
+                text=sent,
+                # Add `[CLS]` and `[SEP]`
+                add_special_tokens=True,
+                max_length=max_len,
+                padding='max_length',
+                # Return PyTorch tensor
+                # return_tensors='pt',
+                # Return attention mask
+                return_attention_mask=True
             )
 
             input_ids.append(encoded_sent.get('input_ids'))
             attention_masks.append(encoded_sent.get('attention_mask'))
 
-        input_ids = torch.tensor(input_ids)
-        attention_masks = torch.tensor(attention_masks)
-
-        self.input_ids = input_ids
-        self.attn_masks = attention_masks
+        self.input_ids = torch.tensor(input_ids).to(DEVICE)
+        self.attn_masks = torch.tensor(attention_masks).to(DEVICE)
