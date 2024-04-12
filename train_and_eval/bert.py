@@ -33,12 +33,12 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
         model.train()
         for step, batch in enumerate(train_dataloader):
             batch_counts += 1
-            b_input_ids, b_attn_mask, b_labels = tuple(t.to(device) for t in batch)
+            b_input_ids, b_attn_mask, b_labels, b_sub_lens = tuple(t.to(device) for t in batch)
             b_labels = b_labels.type(torch.LongTensor)
             b_labels = b_labels.to(device)
 
             model.zero_grad()
-            logits = model(b_input_ids, b_attn_mask)
+            logits = model(b_input_ids, b_attn_mask, b_sub_lens)
             loss = loss_fn(logits, b_labels)
             batch_loss += loss.item()
             total_loss += loss.item()
@@ -152,12 +152,12 @@ def evaluate(model, dataloader, device):
     full_b_labels, full_predict_score = [], []
 
     for batch in dataloader:
-        b_input_ids, b_attn_mask, b_labels = tuple(t.to(device) for t in batch)
+        b_input_ids, b_attn_mask, b_labels, b_sub_lens = tuple(t.to(device) for t in batch)
         b_labels = b_labels.type(torch.LongTensor)
         b_labels = b_labels.to(device)
 
         with torch.no_grad():
-            logits = model(b_input_ids, b_attn_mask)
+            logits = model(b_input_ids, b_attn_mask, b_sub_lens)
 
         loss = loss_fn(logits, b_labels)
         total_loss += loss.item()

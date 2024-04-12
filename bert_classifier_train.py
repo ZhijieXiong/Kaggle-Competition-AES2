@@ -2,7 +2,6 @@ import argparse
 import os
 import torch
 
-import pandas as pd
 from torch.utils.data import DataLoader, RandomSampler
 from transformers import get_linear_schedule_with_warmup, BertTokenizer
 from torch.optim import AdamW
@@ -12,65 +11,63 @@ from dataset.BERTDataset import BERTDataset
 from model.BERTClassifier import BERTClassifier
 from train_and_eval.bert import train
 
-from util import get_now_time, set_seed
+from util import get_now_time, set_seed, load_csv
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--set_number", type=int, default=3)
+    parser.add_argument("--data_dir", type=str,
+                        default=r"F:\code\myProjects\kaggle-AES2-competition\data\processed\kaggle-AES2024")
+    parser.add_argument("--max_label_num", type=int, default=7)
+    parser.add_argument("--bert_model_dir", type=str,
+                        default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-uncased")
     parser.add_argument("--seed", type=int, default=0)
 
-    parser.add_argument("--batch_size", type=int, default=8)
-    parser.add_argument("--max_len", type=int, default=512)
-
-    parser.add_argument("--num_epoch", type=int, default=6)
-    parser.add_argument("--learning_rate", type=float, default=5e-6)
+    parser.add_argument("--pooling", type=str, default="max", choices=("max", "mean"))
+    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--num_epoch", type=int, default=30)
+    parser.add_argument("--learning_rate", type=float, default=1e-6)
     parser.add_argument("--epsilon", type=float, default=1e-6)
     parser.add_argument("--warmup_steps", type=int, default=0)
+
     args = parser.parse_args()
     params = vars(args)
-
     set_seed(params["seed"])
 
-    data_path = r"F:\code\myProjects\kaggle-AES2-competition\data\raw\asap-sas\train_rel_2.tsv"
-    bert_model_dir = r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-uncased"
+    data_dir = params["data_dir"]
+    data_name = os.path.basename(data_dir)
+    data = load_csv(os.path.join(data_dir, "data.csv"))
+    dim_label = params["max_label_num"]
 
-    full_data = pd.read_table(data_path)
-    data = full_data[full_data["EssaySet"] == params["set_number"]]
-    data.index = range(len(data))
-    dim_label = len(data["Score1"].drop_duplicates())
-
-    X = data["EssayText"].values
-    y = data["Score1"].values
+    X = data["full_text"].values
+    y = data["score"].values
     X_train, X_other, y_train, y_other = train_test_split(X, y, test_size=0.2, random_state=params["seed"])
     X_val, X_test, y_val, y_test = train_test_split(X_other, y_other, test_size=0.5, random_state=params["seed"])
 
-    bert_tokenizer = BertTokenizer.from_pretrained(bert_model_dir)
+    bert_tokenizer = BertTokenizer.from_pretrained(params["bert_model_dir"])
     train_dataset = BERTDataset(
         txt_list=X_train.tolist(),
         labels=y_train.tolist(),
-        tokenizer=bert_tokenizer,
-        max_length=params["max_len"]
+        tokenizer=bert_tokenizer
     )
     train_dataloader = DataLoader(train_dataset, sampler=RandomSampler(train_dataset), batch_size=params["batch_size"])
     valid_dataset = BERTDataset(
         txt_list=X_val.tolist(),
         labels=y_val.tolist(),
-        tokenizer=bert_tokenizer,
-        max_length=params["max_len"]
+        tokenizer=bert_tokenizer
     )
     valid_dataloader = DataLoader(valid_dataset, sampler=RandomSampler(valid_dataset), batch_size=params["batch_size"])
     test_dataset = BERTDataset(
         txt_list=X_test.tolist(),
         labels=y_test.tolist(),
-        tokenizer=bert_tokenizer,
-        max_length=params["max_len"]
+        tokenizer=bert_tokenizer
     )
     test_dataloader = DataLoader(test_dataset, sampler=RandomSampler(test_dataset), batch_size=params["batch_size"])
 
-    model = BERTClassifier(bert_model_dir, freeze_bert=False, dim_out=dim_label).to(DEVICE)
+    model = BERTClassifier(params["bert_model_dir"], freeze_bert=False, dim_out=dim_label, pooling=params["pooling"]).\
+        to(DEVICE)
     optimizer = AdamW(model.parameters(), lr=params["learning_rate"], eps=params["epsilon"])
     total_steps = len(train_dataloader) * params["num_epoch"]
     scheduler = get_linear_schedule_with_warmup(
@@ -79,7 +76,7 @@ if __name__ == "__main__":
         num_training_steps=total_steps
     )
 
-    output_dir_name = f"BertClassifier@@seed_{params['seed']}@@asap-sas-set{params['set_number']}@@" \
+    output_dir_name = f"BertClassifier@@seed_{params['seed']}@@{data_name}@@" \
                  f"{get_now_time().replace(' ', '@').replace(':', '-')}"
     output_dir = os.path.join(r"F:\code\myProjects\kaggle-AES2-competition\model_save", output_dir_name)
     os.mkdir(output_dir)
