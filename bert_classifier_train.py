@@ -43,7 +43,7 @@ if __name__ == "__main__":
     bert_tokenizer = BertTokenizer.from_pretrained(params["bert_model_dir"])
     data_dir = params["data_dir"]
     data_name = os.path.basename(data_dir)
-    data = load_csv(os.path.join(data_dir, "data.csv"), num_rows=1000)
+    data = load_csv(os.path.join(data_dir, "data.csv"))
     dim_label = params["max_label_num"]
 
     X = data["full_text"].values

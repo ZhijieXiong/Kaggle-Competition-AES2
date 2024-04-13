@@ -21,9 +21,9 @@ if __name__ == "__main__":
     parser.add_argument("--test_data_path", type=str,
                         default=r"F:\code\myProjects\kaggle-AES2-competition\data\raw\learning-agency-lab-automated-essay-scoring-2\test.csv")
     parser.add_argument("--model_path", type=str,
-                        default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\BertClassifier@@seed_0@@kaggle-AES2024@@2024-04-13@14-43-14\epoch-4.pt")
+                        default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\BertClassifier@@bert-base-cased@@seed_0@@kaggle-AES2024@@2024-04-13@15-36-43\epoch-5.pt")
     parser.add_argument("--bert_model_dir", type=str,
-                        default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-uncased")
+                        default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-cased")
     parser.add_argument("--max_label_num", type=int, default=6)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--pooling", type=str, default="max", choices=("max", "mean"))
