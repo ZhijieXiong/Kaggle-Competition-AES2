@@ -1,4 +1,5 @@
 import datetime
+import argparse
 import torch
 import random
 import numpy as np
@@ -35,3 +36,12 @@ def load_table(data_path, useful_cols=None, rename_dict=None, num_rows=None):
     if rename_dict is not None:
         df.rename(columns=rename_dict, inplace=True)
     return df
+
+
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
