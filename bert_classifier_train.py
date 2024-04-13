@@ -24,7 +24,7 @@ if __name__ == "__main__":
                         default=r"F:\code\myProjects\kaggle-AES2-competition\model_save")
     parser.add_argument("--max_label_num", type=int, default=6)
     parser.add_argument("--bert_model_dir", type=str,
-                        default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-uncased")
+                        default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-cased")
     parser.add_argument("--use_test_dataset", type=str2bool, default=False)
 
     parser.add_argument("--seed", type=int, default=0)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     bert_tokenizer = BertTokenizer.from_pretrained(params["bert_model_dir"])
     data_dir = params["data_dir"]
     data_name = os.path.basename(data_dir)
-    data = load_csv(os.path.join(data_dir, "data.csv"), num_rows=500)
+    data = load_csv(os.path.join(data_dir, "data.csv"), num_rows=1000)
     dim_label = params["max_label_num"]
 
     X = data["full_text"].values
@@ -84,7 +84,9 @@ if __name__ == "__main__":
         num_training_steps=total_steps
     )
 
-    output_dir_name = f"BertClassifier@@seed_{params['seed']}@@{data_name}@@{get_now_time().replace(' ', '@').replace(':', '-')}"
+    bert_name = os.path.basename(params["bert_model_dir"])
+    output_dir_name = f"BertClassifier@@{bert_name}@@seed_{params['seed']}@@{data_name}@@" \
+                      f"{get_now_time().replace(' ', '@').replace(':', '-')}"
     output_dir = os.path.join(params["output_dir"], output_dir_name)
     os.mkdir(output_dir)
     train(model, train_dataloader, valid_dataloader, test_dataloader, optimizer, scheduler, params["num_epoch"], DEVICE,

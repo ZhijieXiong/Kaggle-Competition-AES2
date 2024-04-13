@@ -6,7 +6,7 @@
     --data_dir "/home/xiongzj/myProjects/kaggle-AES2-competition/data/processed/kaggle-AES2024" \
     --output_dir "/home/xiongzj/myProjects/kaggle-AES2-competition/model_save" \
     --max_label_num 6 \
-    --bert_model_dir "/home/xiongzj/myProjects/kaggle-AES2-competition/model_save/bert-base-uncased" \
+    --bert_model_dir "/home/xiongzj/myProjects/kaggle-AES2-competition/model_save/bert-base-cased" \
     --seed 0 \
     --pooling "max" \
     --batch_size 16 \
@@ -14,5 +14,5 @@
     --learning_rate 0.00001 \
     --epsilon 0.000001 \
     --warmup_steps 0
-} >> /home/xiongzj/myProjects/kaggle-AES2-competition/results/bert-classifier_kaggle-AES2024_only-valid.txt
+} >> /home/xiongzj/myProjects/kaggle-AES2-competition/results/bert-classifier-cased_kaggle-AES2024_only-valid.txt
 
