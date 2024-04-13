@@ -189,3 +189,16 @@ def evaluate(model, dataloader, device):
     print("QWK metric is: ", cohen_kappa_score(full_b_labels, full_predict_score, weights="quadratic"))
 
     return val_loss, val_acc, val_acc5, val_f1
+
+
+def inference(model, dataloader, device):
+    model.eval()
+    full_predict_score = []
+    for batch in dataloader:
+        b_input_ids, b_attn_mask, _, b_sub_lens = tuple(t.to(device) for t in batch)
+        with torch.no_grad():
+            logits = model(b_input_ids, b_attn_mask, b_sub_lens)
+        predict_score = torch.argmax(logits, dim=1).flatten()
+        full_predict_score.extend(predict_score.detach().cpu().tolist())
+
+    return full_predict_score
