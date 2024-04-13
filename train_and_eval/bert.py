@@ -85,7 +85,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
         print("-"*150)
         print(f"Saving model after epoch {epoch_i+1} (path: {model_save_path}) ...")
         print("-" * 150)
-        torch.save(model, model_save_path)
+        torch.save(model.state_dict(), model_save_path)
 
         # =======================================
         #               Evaluation

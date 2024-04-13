@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--pooling", type=str, default="max", choices=("max", "mean"))
     parser.add_argument("--batch_size", type=int, default=2)
-    parser.add_argument("--num_epoch", type=int, default=30)
+    parser.add_argument("--num_epoch", type=int, default=10)
     parser.add_argument("--learning_rate", type=float, default=1e-6)
     parser.add_argument("--epsilon", type=float, default=1e-6)
     parser.add_argument("--warmup_steps", type=int, default=0)
@@ -43,12 +43,12 @@ if __name__ == "__main__":
     bert_tokenizer = BertTokenizer.from_pretrained(params["bert_model_dir"])
     data_dir = params["data_dir"]
     data_name = os.path.basename(data_dir)
-    data = load_csv(os.path.join(data_dir, "data.csv"))
+    data = load_csv(os.path.join(data_dir, "data.csv"), num_rows=500)
     dim_label = params["max_label_num"]
 
     X = data["full_text"].values
     y = data["score"].values
-    X_train, X_other, y_train, y_other = train_test_split(X, y, test_size=0.2, random_state=params["seed"])
+    X_train, X_other, y_train, y_other = train_test_split(X, y, test_size=0.3, random_state=params["seed"])
     if params["use_test_dataset"]:
         X_val, X_test, y_val, y_test = train_test_split(X_other, y_other, test_size=0.5, random_state=params["seed"])
         test_dataset = BERTDataset(
