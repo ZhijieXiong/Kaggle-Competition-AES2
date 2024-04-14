@@ -1,0 +1,13 @@
+The document provides holistic scoring guidelines for grading source-based essays on a scale of 1 to 6, where 1 indicates minimum mastery and 6 indicates maximum mastery. The intervals between grades are equal.
+
+A score of 6 indicates exemplary work with clear, substantial mastery. Such an essay is characterized by insightful development of a viewpoint, outstanding critical thinking, valid and relevant evidence, clear focus, skillful language usage, and relatively few minor errors.
+
+A 5-scored essay shows consistent, though not flawless, mastery. It possesses strong critical thinking, generally appropriate examples, good organization, apt language usage, and infrequent errors.
+
+An essay scoring 4 demonstrates adequate mastery, with lapses in quality. It has competent critical thinking, sufficient examples, acceptable organization, generally appropriate language usage, but with some errors.
+
+Essays with a score of 3 display developing mastery, marred by one or more weakness including inconsistent or inadequate development of a point of view, insufficiencies in organization or focus, weak vocabulary, sentence structure problems and accumulation of grammatical errors.
+
+A score of 2 signifies little mastery, with evident weaknesses such as a vague or limited point of view, inappropriate or insufficient evidence, poor organization, severe problems with coherence or progression of ideas, and serious errors in grammar or usage.
+
+A score of 1 is indicative of extremely limited or no mastery. Such essays are marked by the absence or inadequacy of a viable point of view, or evidence supporting it; disorganization leading to a disjointed or incoherent essay; and grave errors in vocabulary or sentence structure, along with pervasive grammar, usage or mechanical errors that majorly hamper the conveyed meaning.

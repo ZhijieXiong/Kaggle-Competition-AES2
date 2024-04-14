@@ -2,6 +2,7 @@ import datetime
 import argparse
 import torch
 import random
+import json
 import numpy as np
 import pandas as pd
 
@@ -45,3 +46,14 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+def load_json(json_path):
+    with open(json_path, "r") as f:
+        result = json.load(f)
+    return result
+
+
+def write_json(json_data, json_path):
+    with open(json_path, "w") as f:
+        json.dump(json_data, f, indent=2)

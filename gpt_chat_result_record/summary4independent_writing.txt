@@ -1,0 +1,29 @@
+This document provides scoring guidelines for independent writing. It follows a grading scale from 1 to 6. Each grade
+has specific parameters regarding the quality of the essay, divided into different domains like critical thinking,
+language usage, coherence, and grammatical correctness.
+
+A '6' score essay shows near complete mastery, with minor errors. It develops a notion effectively, demonstrating
+outstanding critical thinking using appropriate examples and evidence. Such an essay showcases proficient use of
+language, with varied, accurate vocabulary, and a varied sentence structure. Most grammar, usage, and mechanics are
+error-free.
+
+A '5' score essay exhibits reasonably consistent mastery with occasional errors or lapses in quality. It uses
+appropriate examples and evidence to support its critique and presents a coherent flow of ideas. It uses appropriate
+vocabulary, demonstrates sentence structure variety, and is mostly free from grammar and usage errors.
+
+A '4' score essay indicates adequate mastery, with occasional quality lapses. It uses satisfactory examples and reasons
+to support its critique. It displays some coherence in idea progression and may inconsistently use apt vocabulary.
+Errors in grammar, usage, and mechanics are possible.
+
+A '3' score essay shows developing mastery but has one or more notable weaknesses. It may inconsistently develop its
+critique or use inadequate examples or evidence to back its argument. The essay organization and focus may be limited
+with issues in coherence, vocabulary, and sentence structure. Grammatical, usage, and mechanical errors are possible.
+
+A '2' score essay demonstrates limited mastery, characterized by one or more significant flaws. It may discuss the
+subject vaguely, show weak critical thinking, and inappropriate or insufficient evidence for its position. It may show
+serious problems in coherence, limited vocabulary usage, incorrect word choice, and frequent structural errors. Grammar,
+usage, and mechanics errors may partially obscure meaning.
+
+A '1' score essay shows little or no mastery, marked by severe flaws. It lacks a viable point of view or evidence to
+support its position. The essay is disorganized or unfocused and contains pervasive errors in vocabulary, sentence
+structure, grammar, and usage, which persistently impede understanding.
