@@ -15,7 +15,7 @@ MODEL_NAME = "gpt-4"
 DATA = load_csv("./data/processed/kaggle-AES2024/data.csv")
 # 在数据的预处理中都减了1
 DATA["score"] = DATA["score"] + 1
-OUTPUT_DIR = f"./model_save/{MODEL_NAME}-response"
+OUTPUT_DIR = f"./output/{MODEL_NAME}-response"
 
 if not os.path.exists(OUTPUT_DIR):
     os.mkdir(OUTPUT_DIR)
