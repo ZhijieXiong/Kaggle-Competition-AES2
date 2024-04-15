@@ -1,5 +1,4 @@
-data/raw
-data/processed/kaggle-AES2012*
+data
 .idea
 .DS_Store
 model_save
