@@ -31,7 +31,7 @@ def extract_score_explanation(gpt_response_):
 
 
 if __name__ == "__main__":
-    num_call_api = 20
+    num_call_api = 50
 
     # 使用GPT提炼Holistic Rating for Source-Based Writing和Holistic Rating for Independent Writing
     # summary4source_based_writing = prompt_chat(MODEL_NAME, PROMPTS["summary"]["rating4source_based_writing"])
