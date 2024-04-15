@@ -41,35 +41,58 @@ if __name__ == "__main__":
     set_seed(params["seed"])
 
     bert_tokenizer = BertTokenizer.from_pretrained(params["bert_model_dir"])
-    data_dir = params["data_dir"]
-    data_name = os.path.basename(data_dir)
-    data = load_csv(os.path.join(data_dir, "data.csv"))
     dim_label = params["max_label_num"]
 
-    X = data["full_text"].values
-    y = data["score"].values
-    X_train, X_other, y_train, y_other = train_test_split(X, y, test_size=0.3, random_state=params["seed"])
-    if params["use_test_dataset"]:
-        X_val, X_test, y_val, y_test = train_test_split(X_other, y_other, test_size=0.5, random_state=params["seed"])
+    data_dir = params["data_dir"]
+    data_train_with_test_path = os.path.join(data_dir, "data_train_with_test.csv")
+    data_train_without_test_path = os.path.join(data_dir, "data_train_without_test.csv")
+    data_valid_with_test_path = os.path.join(data_dir, "data_valid_with_test.csv")
+    data_valid_without_test_path = os.path.join(data_dir, "data_valid_without_test.csv")
+    data_test_path = os.path.join(data_dir, "data_test.csv")
+    if os.path.exists(data_train_with_test_path) and params["use_test_dataset"] and \
+            os.path.exists(data_valid_with_test_path) and os.path.exists(data_test_path):
+        data_train = load_csv(data_train_with_test_path)
+        data_valid = load_csv(data_valid_with_test_path)
+        data_test = load_csv(data_test_path)
         test_dataset = BERTDataset(
-            txt_list=X_test.tolist(),
-            labels=y_test.tolist(),
+            txt_list=data_test["full_text"].values.tolist(),
+            labels=data_test["score"].values.tolist(),
             tokenizer=bert_tokenizer
         )
         test_dataloader = DataLoader(test_dataset, sampler=RandomSampler(test_dataset), batch_size=params["batch_size"])
-    else:
-        X_val, y_val = X_other, y_other
+    elif os.path.exists(data_train_without_test_path) and not params["use_test_dataset"] and \
+            os.path.exists(data_valid_without_test_path) and os.path.exists(data_test_path):
+        data_train = load_csv(data_train_without_test_path)
+        data_valid = load_csv(data_valid_without_test_path)
         test_dataloader = None
-
+    else:
+        data = load_csv(os.path.join(data_dir, "data.csv"))
+        data_train, data_other = train_test_split(data, test_size=0.3, random_state=0)
+        if params["use_test_dataset"]:
+            data_valid, data_test = train_test_split(data_other, test_size=0.5, random_state=0)
+            test_dataset = BERTDataset(
+                txt_list=data_test["full_text"].values.tolist(),
+                labels=data_test["score"].values.tolist(),
+                tokenizer=bert_tokenizer
+            )
+            test_dataloader = DataLoader(test_dataset, sampler=RandomSampler(test_dataset), batch_size=params["batch_size"])
+            data_train.to_csv(os.path.join(data_dir, "data_train_with_test.csv"), index=False)
+            data_valid.to_csv(os.path.join(data_dir, "data_valid_with_test.csv"), index=False)
+            data_test.to_csv(os.path.join(data_dir, "data_test.csv"), index=False)
+        else:
+            data_valid = data_other
+            data_train.to_csv(os.path.join(data_dir, "data_train_without_test.csv"), index=False)
+            data_valid.to_csv(os.path.join(data_dir, "data_valid_without_test.csv"), index=False)
+            test_dataloader = None
     train_dataset = BERTDataset(
-        txt_list=X_train.tolist(),
-        labels=y_train.tolist(),
+        txt_list=data_train["full_text"].values.tolist(),
+        labels=data_train["score"].values.tolist(),
         tokenizer=bert_tokenizer
     )
     train_dataloader = DataLoader(train_dataset, sampler=RandomSampler(train_dataset), batch_size=params["batch_size"])
     valid_dataset = BERTDataset(
-        txt_list=X_val.tolist(),
-        labels=y_val.tolist(),
+        txt_list=data_valid["full_text"].values.tolist(),
+        labels=data_valid["score"].values.tolist(),
         tokenizer=bert_tokenizer
     )
     valid_dataloader = DataLoader(valid_dataset, sampler=RandomSampler(valid_dataset), batch_size=params["batch_size"])
@@ -85,6 +108,7 @@ if __name__ == "__main__":
     )
 
     bert_name = os.path.basename(params["bert_model_dir"])
+    data_name = os.path.basename(data_dir)
     output_dir_name = f"BertClassifier@@{bert_name}@@seed_{params['seed']}@@{data_name}@@" \
                       f"{get_now_time().replace(' ', '@').replace(':', '-')}"
     output_dir = os.path.join(params["output_dir"], output_dir_name)
