@@ -11,7 +11,7 @@ from dataset.BERTDataset import BERTDataset
 from model.BERTClassifier import BERTClassifier
 from train_and_eval.bert import inference
 
-from util import set_seed, load_csv
+from util import load_csv
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -25,17 +25,14 @@ if __name__ == "__main__":
     parser.add_argument("--bert_model_dir", type=str,
                         default=r"F:\code\myProjects\kaggle-AES2-competition\model_save\bert-base-uncased")
     parser.add_argument("--max_label_num", type=int, default=6)
-    parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--pooling", type=str, default="max", choices=("max", "mean"))
     parser.add_argument("--batch_size", type=int, default=8)
 
     args = parser.parse_args()
     params = vars(args)
-    set_seed(params["seed"])
 
     bert_tokenizer = BertTokenizer.from_pretrained(params["bert_model_dir"])
     data = load_csv(params["test_data_path"])
-    dim_label = params["max_label_num"]
 
     X = data["full_text"].values
     y = [0] * len(X)
@@ -46,8 +43,8 @@ if __name__ == "__main__":
     )
     test_dataloader = DataLoader(test_dataset, sampler=SequentialSampler(test_dataset), batch_size=params["batch_size"])
 
-    model = BERTClassifier(params["bert_model_dir"], freeze_bert=False, dim_out=dim_label, pooling=params["pooling"]).\
-        to(DEVICE)
+    model = BERTClassifier(params["bert_model_dir"], freeze_bert=False, dim_out=params["max_label_num"],
+                           pooling=params["pooling"]).to(DEVICE)
     model.load_state_dict(torch.load(params["model_path"]))
     predict_score = inference(model, test_dataloader, DEVICE)
     submission = pd.DataFrame()
