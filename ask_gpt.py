@@ -31,14 +31,15 @@ def extract_score_explanation(gpt_response_):
 
 
 if __name__ == "__main__":
-    num_call_api = 50
+    num_call_api = 15
 
     # 使用GPT提炼Holistic Rating for Source-Based Writing和Holistic Rating for Independent Writing
     # summary4source_based_writing = prompt_chat(MODEL_NAME, PROMPTS["summary"]["rating4source_based_writing"])
     # summary4independent_writing = prompt_chat(MODEL_NAME, PROMPTS["summary"]["rating4independent_writing"])
 
     # zero shot
-    zero_shot_response_path = os.path.join(OUTPUT_DIR, "zero_shot.json")
+    prompt_name = "zero_shot4AES_v2"
+    zero_shot_response_path = os.path.join(OUTPUT_DIR, f"{prompt_name}.json")
     zero_shot_response = {}
     if os.path.exists(zero_shot_response_path):
         zero_shot_response = load_json(zero_shot_response_path)
@@ -52,7 +53,7 @@ if __name__ == "__main__":
             continue
 
         full_text = row_data["full_text"]
-        prompt = PROMPTS["zero_shot4AES"] + "The following is the content of the essay:\n" + full_text + "\n"
+        prompt = PROMPTS[prompt_name] + "The following is the content of the essay:\n\n" + full_text + "\n"
         has_error, gpt_response, score, explanation = extract_score_explanation(prompt_chat(MODEL_NAME, prompt).content)
         zero_shot_response[essay_id] = {
             "full_text": full_text,
@@ -63,5 +64,5 @@ if __name__ == "__main__":
             zero_shot_response[essay_id]["score_predict"] = score
             zero_shot_response[essay_id]["chain_of_thought"] = explanation
         num_called_api += 1
-        time.sleep(3)
+        time.sleep(1)
     write_json(zero_shot_response, zero_shot_response_path)

@@ -30,7 +30,7 @@ def train(model, train_dataloader, val_dataloader, test_dataloader, optimizer, s
         t0_epoch, t0_batch = time.time(), time.time()
         total_loss, total_acc, total_f1, total_acc5, batch_loss, batch_acc, batch_f1, batch_acc5, batch_counts = \
             0, 0, 0, 0, 0, 0, 0, 0, 0
-        model.train()
+        model.data_train()
         for step, batch in enumerate(train_dataloader):
             batch_counts += 1
             b_input_ids, b_attn_mask, b_labels, b_sub_lens = tuple(t.to(device) for t in batch)

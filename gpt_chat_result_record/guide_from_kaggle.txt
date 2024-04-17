@@ -1,0 +1,42 @@
+https://www.kaggle.com/competitions/learning-agency-lab-automated-essay-scoring-2/discussion/491265
+
+SCORE OF 6:
+    Well organized and clearly focused
+    Demonstrating clear coherence and smooth progression of ideas
+    The essay exhibits skillful use of language using a varied, accurate, and apt vocabulary
+    Demonstrates meaningful variety in sentence structure
+    Essay is free of most errors in grammar, usage, and mechanics.
+
+SCORE OF 5:
+    Well organized and focused
+    Demonstrating coherence and progression of ideas
+    The essay exhibits facility in the use of language, using appropriate vocabulary demonstrates variety in sentence structure
+    Generally free of most errors in grammar, usage, and mechanics.
+
+SCORE OF 4:
+    Generally organized and focused
+    Demonstrating some coherence and progression of ideas
+    May demonstrate inconsistent facility in the use of language, using generally appropriate vocabulary demonstrates some variety in sentence structure
+    The essay may have some errors in grammar, usage, and mechanics.
+
+SCORE OF 3:
+    Marked by ONE OR MORE of the following weaknesses:
+        Develops a point of view on the issue, demonstrating some critical thinking, but may do so inconsistently or use inadequate examples, reasons, or other evidence taken from the source texts to support its position
+        Essay is limited in its organization or focus or may demonstrate some lapses in coherence or progression of ideas
+        May demonstrate facility in the use of language but sometimes uses weak vocabulary or inappropriate word choice and/or lacks variety or demonstrates problems in sentence structure
+        Essay may contain an accumulation of errors in grammar, usage, and mechanics.
+
+Score 2:
+    Flawed by ONE OR MORE of the following weaknesses:
+        Develops a point of view on the issue that is vague or seriously limited, and demonstrates weak critical thinking;
+        Provides inappropriate or insufficient examples, reasons, or other evidence taken from the source text to support its position.
+        Poorly organized and/or focused, or demonstrates serious problems with coherence or progression of ideas.
+        Displays very little facility in the use of language, using very limited vocabulary or incorrect word choice and/or demonstrates frequent problems in sentence structure.
+        Contains errors in grammar, usage, and mechanics so serious that meaning is somewhat obscured.
+
+Score 1:
+    Severely flawed by ONE OR MORE of the following weaknesses:
+        Develops no viable point of view on the issue, or provides little or no evidence to support its position.
+        Disorganized or unfocused, resulting in a disjointed or incoherent essay.
+        Displays fundamental errors in vocabulary and/or demonstrates severe flaws in sentence structure.
+        Contains pervasive errors in grammar, usage, or mechanics that persistently interfere with meaning.
