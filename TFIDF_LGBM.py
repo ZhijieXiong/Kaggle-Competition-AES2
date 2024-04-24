@@ -185,6 +185,7 @@ if __name__ == "__main__":
         on='essay_id', how='left'
     )
     # TFIDF特征工程
+    # 改进：
     vectorizer = TfidfVectorizer(
         tokenizer=lambda x_: x_,
         preprocessor=lambda x_: x_,
