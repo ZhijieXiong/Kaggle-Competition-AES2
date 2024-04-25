@@ -70,23 +70,23 @@ def extract_score(generated_response):
 
 def re_extract_score(generated_response):
     try:
-        score1 = re.search("\$\$(\d)\$\$", generated_response).groups()
-        score2 = re.search("\$(\d)\$\$", generated_response).groups()
-        score3 = re.search("\$\$(\d)\$", generated_response).groups()
-        score4 = re.search("\$(\d)\$", generated_response).groups()
-        if len(score1) > 0:
-            score = score1[0]
-        elif len(score2) > 0:
-            score = score2[0]
-        elif len(score3) > 0:
-            score = score3[0]
-        elif len(score4) > 0:
-            score = score4[0]
+        score1 = re.search("\$\$(\d)\$\$", generated_response)
+        score2 = re.search("\$(\d)\$\$", generated_response)
+        score3 = re.search("\$\$(\d)\$", generated_response)
+        score4 = re.search("\$(\d)\$", generated_response)
+        if score1 is not None:
+            score = score1.groups()[0]
+        elif score2 is not None:
+            score = score2.groups()[0]
+        elif score3 is not None:
+            score = score3.groups()[0]
+        elif score4 is not None:
+            score = score4.groups()[0]
         else:
             score = None
         if score is not None:
             return False, generated_response, int(score)
         else:
-            return False, generated_response, None
+            return True, generated_response, None
     except:
         return True, generated_response, None

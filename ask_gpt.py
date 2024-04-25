@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # prompt = f"{PROMPTS[prompt_name]}\n\n" \
     #          f"The following is the content of the essay:\n\n" \
     #          f"{full_text}\n\n" \
-    #          f"Please give your score directly (wrap it with two $$ signs, such as $$4$$) first. " \
+    #          f"Please give your score firstly (the score is wrapped in `$$`). " \
     #          f"Then give the reason for this score. " \
     #          f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
     #     has_error, gpt_response, score = extract_score(prompt_chat(MODEL_NAME, prompt).content)
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     #              f"{PROMPTS[example_name]}\n\n" \
     #              f"The following is the content of the essay:\n\n" \
     #              f"{full_text}\n\n" \
-    #              f"Please give your score directly (wrap it with two $$ signs, such as $$4$$) first. " \
+    #              f"Please give your score firstly (the score is wrapped in `$$`). " \
     #              f"Then give the reason for this score. " \
     #              f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
     # else:
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     #              f"{PROMPTS[example_name]}\n\n" \
     #              f"The following is the content of the essay:\n\n" \
     #              f"{full_text}\n\n" \
-    #              f"Please give your score directly (wrap it with two $$ signs, such as $$4$$) first. " \
+    #              f"Please give your score firstly (the score is wrapped in `$$`). " \
     #              f"Then give the reason for this score. " \
     #              f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
     #     has_error, gpt_response, score = extract_score(prompt_chat(MODEL_NAME, prompt).content)
