@@ -1,11 +1,10 @@
 import os
 import json
 import inspect
-import re
 import time
 
 from llm_api import prompt_chat
-from util import load_csv, load_json, write_json
+from util import load_csv, load_json, write_json, extract_score
 
 # 导入key
 with open(os.path.join(os.path.dirname(inspect.getfile(inspect.currentframe())), "./prompts.json"), "r") as f:
@@ -19,15 +18,6 @@ OUTPUT_DIR = f"./output/{MODEL_NAME}-response"
 
 if not os.path.exists(OUTPUT_DIR):
     os.mkdir(OUTPUT_DIR)
-
-
-def extract_score_explanation(gpt_response_):
-    try:
-        score_ = int(re.search("\$\$(\d)\$\$", gpt_response_).groups()[0])
-        explanation_ = gpt_response_.replace(f"$${score_}$$", "").strip(" ").strip(".").strip(",").strip(" ").strip(".").strip(",")
-        return False, gpt_response_, score_, explanation_
-    except:
-        return True, gpt_response_, None, None
 
 
 if __name__ == "__main__":
@@ -53,16 +43,20 @@ if __name__ == "__main__":
     #         continue
     #
     #     full_text = row_data["full_text"]
-    #     prompt = PROMPTS[prompt_name] + "The following is the content of the essay:\n\n" + full_text + "\n"
-    #     has_error, gpt_response, score, explanation = extract_score_explanation(prompt_chat(MODEL_NAME, prompt).content)
+    # prompt = f"{PROMPTS[prompt_name]}\n\n" \
+    #          f"The following is the content of the essay:\n\n" \
+    #          f"{full_text}\n\n" \
+    #          f"Please give your score directly (wrap it with two $$ signs, such as $$4$$) first. " \
+    #          f"Then give the reason for this score. " \
+    #          f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
+    #     has_error, gpt_response, score = extract_score(prompt_chat(MODEL_NAME, prompt).content)
     #     zero_shot_response[essay_id] = {
     #         "full_text": full_text,
-    #         "gpt_response": gpt_response,
+    #         "generated_response": gpt_response,
     #         "score_ground_truth": row_data["score"],
     #     }
     #     if not has_error:
     #         zero_shot_response[essay_id]["score_predict"] = score
-    #         zero_shot_response[essay_id]["chain_of_thought"] = explanation
     #     num_called_api += 1
     #     time.sleep(1)
     # write_json(zero_shot_response, zero_shot_response_path)
@@ -85,21 +79,32 @@ if __name__ == "__main__":
     #         continue
     #
     #     full_text = row_data["full_text"]
-    #     if "1_shot" in example_name:
-    #         prompt = PROMPTS[prompt_name] + "This is an example:\n\n" + PROMPTS[example_name] + \
-    #                  "This is the essay that needs your scoring::\n\n" + full_text + "\n"
-    #     else:
-    #         prompt = PROMPTS[prompt_name] + "There are some examples:\n\n" + PROMPTS[example_name] + \
-    #                  "This is the essay that needs your scoring:\n\n" + full_text + "\n"
-    #     has_error, gpt_response, score, explanation = extract_score_explanation(prompt_chat(MODEL_NAME, prompt).content)
+    # if "1_shot" in example_name:
+    #     prompt = f"{PROMPTS[prompt_name]}\n\n" \
+    #              f"This is an example:\n\n" \
+    #              f"{PROMPTS[example_name]}\n\n" \
+    #              f"The following is the content of the essay:\n\n" \
+    #              f"{full_text}\n\n" \
+    #              f"Please give your score directly (wrap it with two $$ signs, such as $$4$$) first. " \
+    #              f"Then give the reason for this score. " \
+    #              f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
+    # else:
+    #     prompt = f"{PROMPTS[prompt_name]}\n\n" \
+    #              f"There are some examples:\n\n" \
+    #              f"{PROMPTS[example_name]}\n\n" \
+    #              f"The following is the content of the essay:\n\n" \
+    #              f"{full_text}\n\n" \
+    #              f"Please give your score directly (wrap it with two $$ signs, such as $$4$$) first. " \
+    #              f"Then give the reason for this score. " \
+    #              f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
+    #     has_error, gpt_response, score = extract_score(prompt_chat(MODEL_NAME, prompt).content)
     #     few_shot_response[essay_id] = {
     #         "full_text": full_text,
-    #         "gpt_response": gpt_response,
+    #         "generated_response": gpt_response,
     #         "score_ground_truth": row_data["score"],
     #     }
     #     if not has_error:
     #         few_shot_response[essay_id]["score_predict"] = score
-    #         few_shot_response[essay_id]["chain_of_thought"] = explanation
     #     num_called_api += 1
     #     time.sleep(1)
     # write_json(few_shot_response, few_shot_response_path)
@@ -121,11 +126,15 @@ if __name__ == "__main__":
 
         full_text = row_data["full_text"]
         ground_truth_score = row_data["score"]
-        prompt = PROMPTS["cot_from_llm"][prompt_name] + "This is the essay:\n\n" + full_text + f"\n\nAnd this is the score given by expert: {ground_truth_score}\n\n"
+        prompt = f"{PROMPTS['cot_from_llm'][prompt_name]}\n\n" \
+                 f"The following is the content of the essay:\n\n" \
+                 f"{full_text}\n\n" \
+                 f"And this is the score given by expert: {ground_truth_score}\n\n" \
+                 f"Now please tell me the reason why the senior marker gave this score.\n\n"
         gpt_response = prompt_chat(MODEL_NAME, prompt).content
         cot_from_llm_zero_shot[essay_id] = {
             "full_text": full_text,
-            "cot": gpt_response,
+            "generated_cot": gpt_response,
             "score_ground_truth": row_data["score"],
         }
         num_called_api += 1

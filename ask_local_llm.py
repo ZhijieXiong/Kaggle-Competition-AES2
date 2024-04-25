@@ -5,21 +5,11 @@ import argparse
 import os
 import transformers
 import torch
-import torch.distributed as dist
 
 from transformers import AutoTokenizer
 
 from model.llama.generation import Llama
-from util import load_csv, load_json, write_json, get_now_time
-
-
-def extract_score_explanation(gpt_response_):
-    try:
-        score_ = int(re.search("\$\$(\d)\$\$", gpt_response_).groups()[0])
-        explanation_ = gpt_response_.replace(f"$${score_}$$", "").strip(" ").strip(".").strip(",").strip(" ").strip(".").strip(",")
-        return False, gpt_response_, score_, explanation_
-    except:
-        return True, gpt_response_, None, None
+from util import load_csv, load_json, write_json, get_now_time, extract_score
 
 
 if __name__ == "__main__":
@@ -97,7 +87,12 @@ if __name__ == "__main__":
             continue
 
         full_text = row_data["full_text"]
-        prompt = PROMPTS[prompt_name] + "The following is the content of the essay:\n\n" + full_text + "\n"
+        prompt = f"{PROMPTS[prompt_name]}\n\n" \
+                 f"The following is the content of the essay:\n\n" \
+                 f"{full_text}\n\n" \
+                 f"Please give your score directly (wrap it with two $$ signs, such as $$4$$) first. " \
+                 f"Then give the reason for this score. " \
+                 f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
 
         if IS_HF:
             sequences = model(
@@ -123,15 +118,14 @@ if __name__ == "__main__":
             generated_response = results[0]['generation']['content']
 
         print(f"{get_now_time()}: complete query {i}")
-        has_error, gpt_response, score, explanation = extract_score_explanation(generated_response)
+        has_error, _, score = extract_score(generated_response)
         zero_shot_response[essay_id] = {
             "full_text": full_text,
-            "gpt_response": gpt_response,
+            "generated_response": generated_response,
             "score_ground_truth": row_data["score"],
         }
         if not has_error:
             zero_shot_response[essay_id]["score_predict"] = score
-            zero_shot_response[essay_id]["chain_of_thought"] = explanation
         num_asked += 1
         time.sleep(1)
     write_json(zero_shot_response, zero_shot_response_path)
