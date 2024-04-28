@@ -1,5 +1,4 @@
 import json
-import time
 import argparse
 import os
 import transformers
@@ -7,8 +6,15 @@ import torch
 
 from transformers import AutoTokenizer
 
-from model.llama.generation import Llama
+from model.llama2.generation import Llama as Llama2
+from model.llama3.generation import Llama as Llama3
 from util import load_csv, load_json, write_json, get_now_time, extract_score
+
+
+MODEL_NAME2TYPE = {
+    "llama2": Llama2,
+    "llama3": Llama3
+}
 
 
 if __name__ == "__main__":
@@ -28,7 +34,7 @@ if __name__ == "__main__":
     parser.add_argument("--temperature", type=float, default=0.6)
     parser.add_argument("--top_p", type=float, default=0.9)
     parser.add_argument("--max_seq_len", type=int, default=4096)
-    parser.add_argument("--max_batch_size", type=int, default=8)
+    parser.add_argument("--max_batch_size", type=int, default=4)
 
     args = parser.parse_args()
     params = vars(args)
@@ -41,8 +47,13 @@ if __name__ == "__main__":
     DATA["score"] = DATA["score"] + 1
 
     MODEL_DIR = params["model_dir"]
+
+    # 判断模型是否可用
     MODEL_NAME = os.path.basename(MODEL_DIR)
-    assert os.path.exists(MODEL_DIR), f"{MODEL_NAME} is not supported"
+    assert os.path.exists(MODEL_DIR), f"{MODEL_NAME} is not exist"
+    llm_name = MODEL_NAME.split("-")[0]
+    assert llm_name in MODEL_NAME2TYPE.keys(), f"{llm_name} is not supported"
+
     IS_HF = MODEL_NAME.split("-")[-1] == "hf"
     OUTPUT_DIR = os.path.join(params["output_dir"], f"{MODEL_NAME}-response")
     os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -61,7 +72,7 @@ if __name__ == "__main__":
         )
         tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
     else:
-        model = Llama.build(
+        model = MODEL_NAME2TYPE[llm_name].build(
             ckpt_dir=MODEL_DIR,
             tokenizer_path=os.path.join(MODEL_DIR, "tokenizer.model"),
             max_seq_len=params["max_seq_len"],
@@ -77,6 +88,8 @@ if __name__ == "__main__":
         zero_shot_response = load_json(zero_shot_response_path)
 
     num_asked = 0
+    dialogs = []
+    essay_ids2query = []
     for i, (_, row_data) in enumerate(DATA.iterrows()):
         if num_asked >= NUM_ASK:
             break
@@ -85,6 +98,7 @@ if __name__ == "__main__":
         if essay_id in zero_shot_response.keys():
             continue
 
+        essay_ids2query.append(essay_id)
         full_text = row_data["full_text"]
         prompt = f"{PROMPTS[prompt_name]}\n\n" \
                  f"The following is the content of the essay:\n\n" \
@@ -100,31 +114,58 @@ if __name__ == "__main__":
                 top_k=10,
                 num_return_sequences=1,
                 eos_token_id=tokenizer.eos_token_id,
-                truncation=True,
+                truncation=False,
                 max_length=params["max_seq_len"],
             )
             generated_response = sequences[0]["generated_text"]
-        else:
-            dialogs = [
-                [{"role": "user", "content": prompt}],
-            ]
-            results = model.chat_completion(
-                dialogs,
-                max_gen_len=None,
-                temperature=params["temperature"],
-                top_p=params["top_p"],
-            )
-            generated_response = results[0]['generation']['content']
 
-        print(f"{get_now_time()}: complete query {i}")
-        has_error, _, score = extract_score(generated_response)
-        zero_shot_response[essay_id] = {
-            "full_text": full_text,
-            "generated_response": generated_response,
-            "score_ground_truth": row_data["score"],
-        }
-        if not has_error:
-            zero_shot_response[essay_id]["score_predict"] = score
+            print(f"{get_now_time()}: complete query {i}")
+            has_error, _, score = extract_score(generated_response)
+            zero_shot_response[essay_id] = {
+                "full_text": full_text,
+                "generated_response": generated_response,
+                "score_ground_truth": row_data["score"],
+            }
+            if not has_error:
+                zero_shot_response[essay_id]["score_predict"] = score
+        else:
+            dialogs.append([{"role": "user", "content": prompt}])
+
         num_asked += 1
-        time.sleep(1)
+
+    if not IS_HF:
+        print(f"{get_now_time()}: start inference")
+        DATA_LIST = DATA.to_dict(orient="records")
+        DATA_DICT = {row_data["essay_id"]: row_data for row_data in DATA_LIST}
+
+        batch_data = []
+        essay_ids = []
+        max_batch_size = params["max_batch_size"]
+        while len(dialogs) > 0:
+            batch_data.append(dialogs.pop(0))
+            essay_ids.append(essay_ids2query.pop(0))
+
+            if len(batch_data) == max_batch_size or len(dialogs) == 0:
+                generated_results = model.chat_completion(
+                    batch_data,
+                    max_gen_len=None,
+                    temperature=params["temperature"],
+                    top_p=params["top_p"],
+                )
+
+                for essay_id, generated_result in zip(essay_ids, generated_results):
+                    generated_response = generated_result['generation']['content']
+                    has_error, _, score = extract_score(generated_response)
+                    zero_shot_response[essay_id] = {
+                        "full_text": DATA_DICT[essay_id]["full_text"],
+                        "generated_response": generated_response,
+                        "score_ground_truth": DATA_DICT[essay_id]["score"],
+                    }
+                    if not has_error:
+                        zero_shot_response[essay_id]["score_predict"] = score
+
+                print(f"{get_now_time()}: complete one batch")
+                batch_data = []
+                essay_ids = []
+
     write_json(zero_shot_response, zero_shot_response_path)
