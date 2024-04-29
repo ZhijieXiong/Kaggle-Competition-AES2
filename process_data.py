@@ -6,6 +6,14 @@ from copy import deepcopy
 from util import set_seed, load_csv, load_table
 
 
+def process_text(text_str):
+    text_paragraphs = text_str.split("\n")
+    text_paragraphs = list(map(lambda x: x.strip(), text_paragraphs))
+    text_paragraphs = list(filter(lambda x: len(x) > 0, text_paragraphs))
+    text_paragraphs = list(map(lambda x: "    " + x, text_paragraphs))
+    return "\n".join(text_paragraphs)
+
+
 def process_asap_sas(source_dir):
     processed_dir = os.path.join(os.path.dirname(os.path.dirname(raw_data_dir)), "processed")
     if not os.path.exists(processed_dir):
@@ -50,6 +58,7 @@ def process_kaggle_AES2(source_dir):
     # 原始数据为1~6分，改为0~5分
     src_data["score"] = src_data["score"] - 1
     src_data["essay_index"] = range(len(src_data))
+    src_data["full_text"] = src_data["full_text"].map(process_text)
     src_data.to_csv(os.path.join(processed_data_dir, "data.csv"), index=False)
 
 
@@ -61,7 +70,7 @@ PROCESS_FUNCTION_TABLE = {
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--raw_data_dir", type=str, default=r"F:\code\myProjects\kaggle-AES2-competition\data\raw\learning-agency-lab-automated-essay-scoring-2")
+    parser.add_argument("--raw_data_dir", type=str, default=r"/Users/dream/myProjects/kaggle-competition-AES2/data/raw/learning-agency-lab-automated-essay-scoring-2")
     parser.add_argument("--seed", type=int, default=0)
 
     args = parser.parse_args()

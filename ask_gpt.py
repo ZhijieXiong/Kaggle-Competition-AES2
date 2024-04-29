@@ -27,7 +27,6 @@ if __name__ == "__main__":
     # summary4source_based_writing = prompt_chat(MODEL_NAME, PROMPTS["summary"]["rating4source_based_writing"])
     # summary4independent_writing = prompt_chat(MODEL_NAME, PROMPTS["summary"]["rating4independent_writing"])
 
-
     # zero shot
     # prompt_name = "zero_shot_v2"
     # zero_shot_response_path = os.path.join(OUTPUT_DIR, f"{prompt_name}.json")
@@ -62,84 +61,51 @@ if __name__ == "__main__":
     #     time.sleep(1)
     # write_json(zero_shot_response, zero_shot_response_path)
 
-
     # few shot
-    # prompt_name = "zero_shot_v2"
-    # example_name = "1_shot_low_score"
-    # few_shot_response_path = os.path.join(OUTPUT_DIR, f"few_shot-using_{prompt_name}-{example_name}.json")
-    # few_shot_response = {}
-    # if os.path.exists(few_shot_response_path):
-    #     few_shot_response = load_json(few_shot_response_path)
-    # num_called_api = 0
-    # example_essay_id = PROMPTS["few_shot_example_essay_id"][example_name]
-    # for i, (_, row_data) in enumerate(DATA.iterrows()):
-    #     if num_called_api >= num_call_api:
-    #         break
-    #
-    #     essay_id = row_data["essay_id"]
-    #     if (essay_id in few_shot_response.keys()) or (essay_id == example_essay_id):
-    #         continue
-    #
-    #     full_text = row_data["full_text"]
-    # if "1_shot" in example_name:
-    #     prompt = f"{PROMPTS[prompt_name]}\n\n" \
-    #              f"This is an example:\n\n" \
-    #              f"{PROMPTS[example_name]}\n\n" \
-    #              f"The following is the content of the essay:\n\n" \
-    #              f"{full_text}\n\n" \
-    #              f"Please give your score firstly (the score is wrapped in `$$`). " \
-    #              f"Then give the reason for this score. " \
-    #              f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
-    # else:
-    #     prompt = f"{PROMPTS[prompt_name]}\n\n" \
-    #              f"There are some examples:\n\n" \
-    #              f"{PROMPTS[example_name]}\n\n" \
-    #              f"The following is the content of the essay:\n\n" \
-    #              f"{full_text}\n\n" \
-    #              f"Please give your score firstly (the score is wrapped in `$$`). " \
-    #              f"Then give the reason for this score. " \
-    #              f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
-    #     has_error, gpt_response, score = extract_score(prompt_chat(MODEL_NAME, prompt).content)
-    #     few_shot_response[essay_id] = {
-    #         "full_text": full_text,
-    #         "generated_response": gpt_response,
-    #         "score_ground_truth": row_data["score"],
-    #     }
-    #     if not has_error:
-    #         few_shot_response[essay_id]["score_predict"] = score
-    #     num_called_api += 1
-    #     time.sleep(1)
-    # write_json(few_shot_response, few_shot_response_path)
-
-
-    # 给LLM文章和分数，让LLM推断打这个分数的理由
-    prompt_name = "zero_shot"
-    cot_from_llm_zero_shot_path = os.path.join(OUTPUT_DIR, f"cot_from_llm-{prompt_name}.json")
-    cot_from_llm_zero_shot = {}
-    if os.path.exists(cot_from_llm_zero_shot_path):
-        cot_from_llm_zero_shot = load_json(cot_from_llm_zero_shot_path)
+    prompt_name = "zero_shot_v2"
+    example_name = "1_shot_low_score"
+    few_shot_response_path = os.path.join(OUTPUT_DIR, f"few_shot-using_{prompt_name}-{example_name}.json")
+    few_shot_response = {}
+    if os.path.exists(few_shot_response_path):
+        few_shot_response = load_json(few_shot_response_path)
     num_called_api = 0
+    example_essay_id = PROMPTS["few_shot_example_essay_id"][example_name]
     for i, (_, row_data) in enumerate(DATA.iterrows()):
         if num_called_api >= num_call_api:
             break
 
         essay_id = row_data["essay_id"]
-        if essay_id in cot_from_llm_zero_shot.keys():
+        if (essay_id in few_shot_response.keys()) or (essay_id == example_essay_id):
             continue
 
         full_text = row_data["full_text"]
-        ground_truth_score = row_data["score"]
-        prompt = f"{PROMPTS['cot_from_llm'][prompt_name]}\n\n" \
-                 f"The following is the content of the essay:\n\n" \
-                 f"{full_text}\n\n" \
-                 f"And this is the score given by expert: {ground_truth_score}\n\n" \
-                 f"Now please tell me the reason why the senior marker gave this score.\n\n"
-        gpt_response = prompt_chat(MODEL_NAME, prompt).content
-        cot_from_llm_zero_shot[essay_id] = {
+        if "1_shot" in example_name:
+            prompt = f"{PROMPTS[prompt_name]}\n\n" \
+                     f"This is an example:\n\n" \
+                     f"{PROMPTS[example_name]}\n\n" \
+                     f"The following is the content of the essay:\n\n" \
+                     f"{full_text}\n\n" \
+                     f"Please give your score firstly (the score is wrapped in `$$`). " \
+                     f"Then give the reason for this score. " \
+                     f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
+        else:
+            prompt = f"{PROMPTS[prompt_name]}\n\n" \
+                     f"There are some examples:\n\n" \
+                     f"{PROMPTS[example_name]}\n\n" \
+                     f"The following is the content of the essay:\n\n" \
+                     f"{full_text}\n\n" \
+                     f"Please give your score firstly (the score is wrapped in `$$`). " \
+                     f"Then give the reason for this score. " \
+                     f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
+
+        has_error, gpt_response, score = extract_score(prompt_chat(MODEL_NAME, prompt).content)
+        few_shot_response[essay_id] = {
             "full_text": full_text,
-            "generated_cot": gpt_response,
+            "generated_response": gpt_response,
             "score_ground_truth": row_data["score"],
         }
+        if not has_error:
+            few_shot_response[essay_id]["score_predict"] = score
         num_called_api += 1
         time.sleep(1)
-    write_json(cot_from_llm_zero_shot, cot_from_llm_zero_shot_path)
+    write_json(few_shot_response, few_shot_response_path)
