@@ -27,6 +27,7 @@ if __name__ == "__main__":
     # summary4source_based_writing = prompt_chat(MODEL_NAME, PROMPTS["summary"]["rating4source_based_writing"])
     # summary4independent_writing = prompt_chat(MODEL_NAME, PROMPTS["summary"]["rating4independent_writing"])
 
+
     # zero shot
     # prompt_name = "zero_shot_v2"
     # zero_shot_response_path = os.path.join(OUTPUT_DIR, f"{prompt_name}.json")
@@ -60,6 +61,7 @@ if __name__ == "__main__":
     #     num_called_api += 1
     #     time.sleep(1)
     # write_json(zero_shot_response, zero_shot_response_path)
+
 
     # few shot
     # prompt_name = "zero_shot_v2"
@@ -108,6 +110,7 @@ if __name__ == "__main__":
     #     num_called_api += 1
     #     time.sleep(1)
     # write_json(few_shot_response, few_shot_response_path)
+
 
     # 给LLM文章和分数，让LLM推断打这个分数的理由
     prompt_name = "zero_shot"

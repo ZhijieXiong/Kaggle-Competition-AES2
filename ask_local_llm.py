@@ -21,6 +21,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--prompts_path", type=str,
                         default=r"F:\code\myProjects\kaggle-AES2-competition\prompts.json")
+    parser.add_argument("--prompt_type", type=str, default="zero_shot")
+    parser.add_argument("--zero_shot_type", type=str, default="zero_shot_v2")
+    parser.add_argument("--example_type", type=str, default="1_shot_low_score")
     parser.add_argument("--model_dir", type=str,
                         default=r"F:\code\myProjects\kaggle-AES2-competition\llama2-7b-hf")
     parser.add_argument("--data_dir", type=str,
@@ -59,6 +62,19 @@ if __name__ == "__main__":
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     NUM_ASK = params["num_ask"]
+    PROMPT_TYPE = params["prompt_type"]
+    ZERO_SHOT_TYPE = params["zero_shot_type"]
+    EXAMPLE_TYPE = params["example_type"]
+
+    if PROMPT_TYPE == "zero_shot":
+        save_response_path = os.path.join(OUTPUT_DIR, f"{ZERO_SHOT_TYPE}.json")
+        assert ZERO_SHOT_TYPE in PROMPTS.keys(), f"{ZERO_SHOT_TYPE} is not supported"
+    elif PROMPT_TYPE == "few_shot":
+        save_response_path = os.path.join(OUTPUT_DIR, f"few_shot-{ZERO_SHOT_TYPE}-{EXAMPLE_TYPE}.json")
+        assert ZERO_SHOT_TYPE in PROMPTS.keys(), f"{ZERO_SHOT_TYPE} is not supported"
+        assert EXAMPLE_TYPE in PROMPTS.keys(), f"{EXAMPLE_TYPE} is not supported"
+    else:
+        raise NotImplementedError()
     # -------------------------------------------------------------------------------------
 
     # load pipline or generator
@@ -80,12 +96,9 @@ if __name__ == "__main__":
         )
         tokenizer = None
 
-    # zero shot
-    prompt_name = "zero_shot_v2"
-    zero_shot_response_path = os.path.join(OUTPUT_DIR, f"{prompt_name}.json")
-    zero_shot_response = {}
-    if os.path.exists(zero_shot_response_path):
-        zero_shot_response = load_json(zero_shot_response_path)
+    save_response = {}
+    if os.path.exists(save_response_path):
+        save_response = load_json(save_response_path)
 
     num_asked = 0
     dialogs = []
@@ -95,17 +108,40 @@ if __name__ == "__main__":
             break
 
         essay_id = row_data["essay_id"]
-        if essay_id in zero_shot_response.keys():
+        if essay_id in save_response.keys():
             continue
 
         essay_ids2query.append(essay_id)
         full_text = row_data["full_text"]
-        prompt = f"{PROMPTS[prompt_name]}\n\n" \
-                 f"The following is the content of the essay:\n\n" \
-                 f"{full_text}\n\n" \
-                 f"Please give your score firstly (the score is wrapped in `$$`). " \
-                 f"Then give the reason for this score. " \
-                 f"For example: `I would give this essay a score of $$score_number$$. The reason for giving this score is ...`\n\n"
+
+        if PROMPT_TYPE == "zero_shot":
+            prompt = f"{PROMPTS[ZERO_SHOT_TYPE]}\n\n" \
+                     f"The following is the content of the essay:\n\n" \
+                     f"{full_text}\n\n" \
+                     f"Please give your score firstly (the score is wrapped in `$$`). " \
+                     f"Then give the reason for this score. " \
+                     f"For example: `I would give this essay a score of $$score_number$$. The reason for giving this score is ...`\n\n"
+        elif PROMPT_TYPE == "few_shot":
+            if EXAMPLE_TYPE in ["1_shot_low_score", "1_shot_middle_score", "1_shot_high_score"]:
+                prompt = f"{PROMPTS[ZERO_SHOT_TYPE]}\n\n" \
+                         f"This is an example:\n\n" \
+                         f"{PROMPTS[EXAMPLE_TYPE]}\n\n" \
+                         f"The following is the content of the essay:\n\n" \
+                         f"{full_text}\n\n" \
+                         f"Please give your score firstly (the score is wrapped in `$$`). " \
+                         f"Then give the reason for this score. " \
+                         f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
+            else:
+                prompt = f"{PROMPTS[ZERO_SHOT_TYPE]}\n\n" \
+                         f"There are some examples:\n\n" \
+                         f"{PROMPTS[EXAMPLE_TYPE]}\n\n" \
+                         f"The following is the content of the essay:\n\n" \
+                         f"{full_text}\n\n" \
+                         f"Please give your score firstly (the score is wrapped in `$$`). " \
+                         f"Then give the reason for this score. " \
+                         f"For example: `I would give this essay a score of $$4$$. The reason for giving this score is ...`\n\n"
+        else:
+            raise NotImplementedError()
 
         if IS_HF:
             sequences = model(
@@ -121,13 +157,13 @@ if __name__ == "__main__":
 
             print(f"{get_now_time()}: complete query {i}")
             has_error, _, score = extract_score(generated_response)
-            zero_shot_response[essay_id] = {
+            save_response[essay_id] = {
                 "full_text": full_text,
                 "generated_response": generated_response,
                 "score_ground_truth": row_data["score"],
             }
             if not has_error:
-                zero_shot_response[essay_id]["score_predict"] = score
+                save_response[essay_id]["score_predict"] = score
         else:
             dialogs.append([{"role": "user", "content": prompt}])
 
@@ -156,16 +192,16 @@ if __name__ == "__main__":
                 for essay_id, generated_result in zip(essay_ids, generated_results):
                     generated_response = generated_result['generation']['content']
                     has_error, _, score = extract_score(generated_response)
-                    zero_shot_response[essay_id] = {
+                    save_response[essay_id] = {
                         "full_text": DATA_DICT[essay_id]["full_text"],
                         "generated_response": generated_response,
                         "score_ground_truth": DATA_DICT[essay_id]["score"],
                     }
                     if not has_error:
-                        zero_shot_response[essay_id]["score_predict"] = score
+                        save_response[essay_id]["score_predict"] = score
 
                 print(f"{get_now_time()}: complete one batch")
                 batch_data = []
                 essay_ids = []
 
-    write_json(zero_shot_response, zero_shot_response_path)
+    write_json(save_response, save_response_path)

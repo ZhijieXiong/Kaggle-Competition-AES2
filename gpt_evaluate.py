@@ -3,7 +3,7 @@ from train_and_eval.gpt import evaluate
 
 
 if __name__ == "__main__":
-    json_file_path = r"F:\code\myProjects\kaggle-AES2-competition\output\llama2-7b-hf-response\zero_shot_v2.json"
+    json_file_path = r"F:\code\myProjects\kaggle-AES2-competition\output\llama3-8b-instruct-response\zero_shot_v2.json"
     generated_output = load_json(json_file_path)
 
     num_extracted_fail = 0
