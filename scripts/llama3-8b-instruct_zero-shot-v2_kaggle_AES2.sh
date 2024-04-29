@@ -7,7 +7,7 @@
     --model_dir "/data/xiongzj/LLM/llama3-8b-instruct" \
     --data_dir "/home/xiongzj/myProjects/kaggle-AES2-competition/data/processed" \
     --output_dir "/home/xiongzj/myProjects/kaggle-AES2-competition/output" \
-    --data_name "kaggle-AES2024" --num_ask 100 \
+    --data_name "kaggle-AES2024" --num_ask 50 \
     --temperature 0.6 --top_p 0.9 --max_seq_len 8192 --max_batch_size 8
 } >> /home/xiongzj/myProjects/kaggle-AES2-competition/results/llama3-8b-instruct_zero-shot-v2_kaggle-AES2024.txt
 
